@@ -10,6 +10,8 @@ The system intelligently takes over the heat pump (via a dry-contact), keeps a d
 supply temperature with dew-point protection, prioritises solar heat in winter, and logs
 everything to a Google Sheet + Telegram.
 
+![Samster's Land HESTIA — CYD touch control panel](docs/img/cyd-display.jpg)
+
 ## 🧩 Architecture
 
 ```mermaid
@@ -42,6 +44,13 @@ flowchart TD
 | `cyd` | CYD (ESP32 + display) | Touch display / control panel over UART |
 
 Node link: **LoRa 868 MHz** (LR1121 / RadioLib).
+
+## 🛠️ Hardware
+
+| Boiler room | Node internals | Wall-mounted node |
+|:---:|:---:|:---:|
+| ![Boiler room](docs/img/boiler-room.jpg) | ![Node internals](docs/img/node-internals.jpg) | ![Wall node](docs/img/node-wall.jpg) |
+| Emmeti thermostats + LoRa node | ESP32 + baseboard PCB + SHT40 sensor | House node, wall-mounted |
 
 ## ⚙️ Setup
 

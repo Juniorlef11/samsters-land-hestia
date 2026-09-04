@@ -10,6 +10,8 @@
 προσαγωγή με προστασία σημείου δρόσου, εξισορροπεί ηλιακή προτεραιότητα τον χειμώνα, και
 καταγράφει τα πάντα σε Google Sheet + Telegram.
 
+![Samster's Land HESTIA — χειριστήριο CYD](docs/img/cyd-display.jpg)
+
 ## 🧩 Αρχιτεκτονική
 
 ```mermaid
@@ -42,6 +44,13 @@ flowchart TD
 | `cyd` | CYD (ESP32 + οθόνη) | Οθόνη/χειριστήριο μέσω UART |
 
 Επικοινωνία κόμβων: **LoRa 868 MHz** (LR1121 / RadioLib).
+
+## 🛠️ Υλικό (Hardware)
+
+| Λεβητοστάσιο | Εσωτερικά κόμβου | Κόμβος στον τοίχο |
+|:---:|:---:|:---:|
+| ![Λεβητοστάσιο](docs/img/boiler-room.jpg) | ![Εσωτερικά](docs/img/node-internals.jpg) | ![Κόμβος τοίχου](docs/img/node-wall.jpg) |
+| Θερμοστάτες Emmeti + κόμβος LoRa | ESP32 + baseboard PCB + αισθητήρας SHT40 | Κόμβος σπιτιού στον τοίχο |
 
 ## ⚙️ Στήσιμο
 
