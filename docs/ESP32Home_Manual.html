@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<title>Samster's Land HESTIA — Τεχνικό Εγχειρίδιο</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body { font-family: "Segoe UI", Arial, sans-serif; color: #1c2430; line-height: 1.5; font-size: 11px; }
+  h1 { font-size: 30px; color: #b8541a; margin: 0 0 4px; }
+  h2 { font-size: 18px; color: #0d4a6b; border-bottom: 2px solid #0d4a6b; padding-bottom: 3px; margin-top: 26px; page-break-after: avoid; }
+  h3 { font-size: 13px; color: #b8541a; margin-top: 16px; margin-bottom: 4px; page-break-after: avoid; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 10px; }
+  th, td { border: 1px solid #c3ccd6; padding: 4px 7px; text-align: left; vertical-align: top; }
+  th { background: #eaf1f6; color: #0d4a6b; }
+  tr:nth-child(even) td { background: #f7fafc; }
+  code, .mono { font-family: "Consolas", monospace; background: #eef2f5; padding: 1px 4px; border-radius: 3px; font-size: 10px; }
+  pre { background: #1c2430; color: #e6edf3; padding: 10px 12px; border-radius: 6px; font-family: "Consolas", monospace; font-size: 10px; line-height: 1.45; overflow-x: auto; white-space: pre-wrap; }
+  .cover { text-align: center; padding-top: 40mm; page-break-after: always; }
+  .cover .sub { font-size: 15px; color: #5a6675; margin-top: 6px; }
+  .cover .meta { margin-top: 28mm; font-size: 12px; color: #5a6675; }
+  .badge { display: inline-block; background: #0d4a6b; color: #fff; border-radius: 4px; padding: 2px 8px; font-size: 10px; margin: 2px; }
+  .warn { background: #fff4e5; border-left: 4px solid #d9822b; padding: 8px 12px; margin: 8px 0; border-radius: 0 5px 5px 0; }
+  .ok { background: #eafaf0; border-left: 4px solid #2e9e5b; padding: 8px 12px; margin: 8px 0; border-radius: 0 5px 5px 0; }
+  .toc a { color: #0d4a6b; text-decoration: none; }
+  .toc li { margin: 3px 0; }
+  .section { page-break-inside: avoid; }
+  .small { color: #5a6675; font-size: 9.5px; }
+  ul { margin: 6px 0; padding-left: 20px; }
+  li { margin: 2px 0; }
+  .flex { display: flex; gap: 14px; }
+  .flex > div { flex: 1; }
+  hr { border: none; border-top: 1px solid #dde3ea; margin: 14px 0; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>🔥 Samster's Land HESTIA</h1>
+  <div class="sub"><b>H</b>ome <b>E</b>nergy &amp; <b>S</b>mart <b>T</b>hermal <b>I</b>ntelligent <b>A</b>utomation</div>
+  <div class="sub">Σύστημα Έξυπνου Ελέγχου Θέρμανσης, Ψύξης &amp; Ενέργειας με LoRa</div>
+  <div class="sub" style="font-size:12px;color:#8a96a5;margin-top:6px;">Τεχνικό Εγχειρίδιο &amp; Τεκμηρίωση</div>
+  <div style="margin-top:12px;">
+    <span class="badge">LoRa 868 MHz</span>
+    <span class="badge">Αντιστάθμιση Καιρού</span>
+    <span class="badge">Θέρμανση + Ψύξη</span>
+    <span class="badge">Αντλία Θερμότητας</span>
+    <span class="badge">Μέτρηση Ενέργειας &amp; Κόστους</span>
+    <span class="badge">Telegram + Web</span>
+    <span class="badge">Touchscreen + OLED</span>
+    <span class="badge">Υγρασία + Σημείο Δρόσου</span>
+    <span class="badge">Ασύρματη Οθόνη (WiFi/UDP)</span>
+    <span class="badge">Καιρός + Πρόβλεψη</span>
+  </div>
+  <div class="meta">
+    Έκδοση 3.0 &nbsp;•&nbsp; 27 Ιουνίου 2026<br>
+    PlatformIO / Arduino &nbsp;•&nbsp; ESP32-S3 + ESP32 + CYD<br>
+    Σχεδίαση &amp; κατασκευή: <b>Lefevr Konstantinos</b><br>
+    Πλήρως τοπικό (standalone, χωρίς Home Assistant)
+  </div>
+</div>
+
+<h2>Περιεχόμενα</h2>
+<ol class="toc">
+  <li><a href="#overview">Επισκόπηση συστήματος</a></li>
+  <li><a href="#arch">Αρχιτεκτονική — οι 3 κόμβοι</a></li>
+  <li><a href="#features">Δυνατότητες</a></li>
+  <li><a href="#pinouts">Hardware &amp; αντιστοίχιση pins</a></li>
+  <li><a href="#wiring">Καλωδιώσεις</a></li>
+  <li><a href="#logic">Λογική ελέγχου τρίοδης</a></li>
+  <li><a href="#params">Παράμετροι (tunable)</a></li>
+  <li><a href="#proto">Πρωτόκολλα επικοινωνίας</a></li>
+  <li><a href="#status">Ενδείξεις κατάστασης — τι φαίνεται πού</a></li>
+  <li><a href="#telegram">Εντολές Telegram</a></li>
+  <li><a href="#flags">Flags λειτουργίας &amp; στάδια</a></li>
+  <li><a href="#build">Build, Flash &amp; θύρες</a></li>
+  <li><a href="#safety">Ασφάλεια</a></li>
+  <li><a href="#future">Μελλοντικά / TODO</a></li>
+</ol>
+
+<div class="section" id="overview">
+<h2>1. Επισκόπηση συστήματος</h2>
+<p>Το <b>Samster's Land HESTIA</b> είναι ένα πλήρως τοπικό (standalone) σύστημα ελέγχου θέρμανσης &amp; ψύξης. Πηγή είναι μια <b>αντλία θερμότητας (Emmeti)</b> που ζεσταίνει/κρυώνει buffer και έχει <b>δικό της χειριστήριο (Crono-TH)</b> — το σύστημά μας <b>δεν την ελέγχει</b>, αλλά <b>μετράει την κατανάλωσή της</b> (SCT-013) και υπολογίζει το <b>κόστος σε €</b>. Ένας ελεγκτής στο λεβητοστάσιο διαβάζει θερμοκρασίες και χειρίζεται μια <b>τρίοδη αναμεικτική βάνα Seltron AVC05</b> + κυκλοφορητή, με <b>αντιστάθμιση καιρού</b>, για να δίνει το σωστό «μιγμένο» νερό σε ενδοδαπέδιο + fancoil. Επικοινωνεί ασύρματα (LoRa 868 MHz) με έναν κόμβο στο σπίτι, που προσφέρει <b>οθόνη αφής (CYD)</b>, <b>Telegram</b>, <b>τοπική web σελίδα</b> και <b>παρακολούθηση ενέργειας/κόστους</b> (ημερήσιο/μηνιαίο/συνολικό, με ώρα από NTP). Στο λεβητοστάσιο υπάρχει επιπλέον τοπικό <b>OLED service display</b>. Ο κόμβος του σπιτιού μετράει <b>θερμοκρασία + υγρασία</b> (SHT40) και υπολογίζει το <b>σημείο δρόσου (dew-point)</b>, ώστε στην ψύξη το ελάχιστο όριο προσαγωγής να ρυθμίζεται <b>δυναμικά</b> (πάντα πάνω από το dew-point) — μέγιστος δροσισμός χωρίς συμπύκνωση. Μια <b>ένδειξη κατάστασης</b> (Θέρμανση / Ψύξη / Αναμονή ζεστού / Αναμονή κρύου / Ασφάλεια) εμφανίζεται σε <b>όλες τις διεπαφές</b> (CYD, Telegram, OLED). Η <b>οθόνη αφής CYD είναι πλέον ΑΣΥΡΜΑΤΗ</b> (WiFi/UDP, χωρίς καλώδιο γέφυρας) — μπαίνει στο σαλόνι μακριά από τη ζέστη — με <b>3 σελίδες σε swipe</b>: <b>Θέρμανση</b>, <b>Καιρός</b> (τρέχων + πρόβλεψη 4 ημερών από Open-Meteo) και <b>Ενέργεια</b> (kWh &amp; κόστος).</p>
+<div class="ok"><b>Φιλοσοφία:</b> Πλήρως τοπικό, χωρίs cloud/Home Assistant. Το λεβητοστάσιο λειτουργεί αυτόνομα ακόμη κι αν πέσει το WiFi ή χαθεί η επικοινωνία (failsafe).</div>
+</div>
+
+<div class="section" id="arch">
+<h2>2. Αρχιτεκτονική — οι 3 κόμβοι</h2>
+<table>
+<tr><th>Κόμβος</th><th>Board / env</th><th>Ρόλος</th></tr>
+<tr><td><b>Λεβητοστάσιο</b></td><td>ESP32-S3<br><code>levitostatio</code></td><td>Ο «εγκέφαλος». Διαβάζει DS18B20 (buffer ζεστού/κρύου, προσαγωγή, εξωτερική), ελέγχει τρίοδη + κυκλοφορητή (4ch relay), τρέχει όλη τη λογική αντιστάθμισης. <b>Μετράει την κατανάλωση της αντλίας θερμότητας</b> (SCT-013). Τοπικό <b>OLED</b> κατάστασης/βλαβών. <b>Θυμάται τη θέση της βάνας σε NVS</b> (επιβιώνει διακοπή). Στέλνει <code>BoilerStatus</code>, λαμβάνει <code>HouseCmd</code>.</td></tr>
+<tr><td><b>Σπίτι / Hub</b></td><td>ESP32 dev<br><code>living_room</code></td><td>Κόμβος σπιτιού: LoRa + <b>WiFi</b> + <b>Telegram bot</b> + <b>web</b> + <b>ασύρματη ζεύξη WiFi/UDP</b> προς CYD. <b>Onboard LED</b> (μπλε GPIO2) ανάβει όταν δουλεύει ο κυκλοφορητής. Διαβάζει <b>θερμοκρασία + υγρασία δωματίου</b> (SHT40) και <b>υπολογίζει το σημείο δρόσου</b> (το στέλνει στον S3 για δυναμικό όριο ψύξης). <b>Υπολογίζει ενέργεια &amp; κόστος σε €</b> (ημερήσιο/μηνιαίο/συνολικό, ώρα από <b>NTP</b>). Στέλνει <code>HouseCmd</code> (setpoint/εποχή), λαμβάνει <code>BoilerStatus</code>. Αποθηκεύει ρυθμίσεις + ενέργεια σε NVS.</td></tr>
+<tr><td><b>CYD (οθόνη)</b></td><td>ESP32-3248S035<br>ILI9488 3.5" 480×320<br><code>cyd</code></td><td>Ασύρματο χειριστήριο αφής μέσω <b>WiFi/UDP</b> (όχι LoRa, όχι πια UART). <b>3 σελίδες σε swipe</b> (Θέρμανση / Καιρός / Ενέργεια) με τελίτσες. Δείχνει όλες τις τιμές (+ <b>υγρασία</b>, ισχύ αντλίας, ώρα NTP), <b>χρωματική ένδειξη κατάστασης</b>, αλλάζει setpoint/εποχή (+ διάλογος ενδοδαπέδιας ψύξης). Τραβάει <b>καιρό</b> από το internet (Open-Meteo). Γονικό κλείδωμα, auto-dim/lock.</td></tr>
+</table>
+<pre>   [ΛΕΒΗΤΟΣΤΑΣΙΟ]              ~40m, τοίχοι              [ΣΠΙΤΙ / HUB]          [CYD οθόνη — σαλόνι]
+   ESP32-S3        &lt;----------- LoRa 868MHz ----------&gt;  ESP32 dev  &lt;-- WiFi/UDP --&gt;  ESP32-3248S035
+   τρίοδη+αντλία                                          WiFi/Telegram/web        3 σελίδες (swipe)
+   4× DS18B20                                             1× SHT40 (θερμ.+υγρασία)  Θέρμανση/Καιρός/Ενέργεια</pre>
+<p><b>LoRa:</b> Core1121-XF (LR1121) @ 868 MHz, SF9, BW125, CR 4/8, syncword 0x12, +22 dBm, implicit header, frame 24 bytes, software CRC16. <span class="small">RSSI πάγκου ~−63 dBm = υγιές (LoRa@SF9 δουλεύει ως ~−123 dBm → ~60 dB περιθώριο). Με εξωτερική κεραία στο λεβητοστάσιο αναμένεται άνετο σήμα στα ~40m.</span></p>
+</div>
+
+<div class="section" id="features">
+<h2>3. Δυνατότητες</h2>
+<div class="flex">
+<div>
+<h3>Έλεγχος θέρμανσης</h3>
+<ul>
+<li>Αντιστάθμιση καιρού (heating curve με κλίση)</li>
+<li>Διόρθωση από θερμοκρασία δωματίου (room influence)</li>
+<li>Εξομάλυνση εξωτερικής (EMA ~1h) — anti-spike</li>
+<li>Αναλογικός έλεγχος τρίοδης με deadband + settle</li>
+<li>Έλεγχος κυκλοφορητή με anti-short-cycle</li>
+</ul>
+<h3>Έλεγχος ψύξης (δροσισμός)</h3>
+<ul>
+<li>Ίδια τρίοδη με κρύο buffer (ίδια φορά κίνησης)</li>
+<li>Επιλογή ενδοδαπέδιο ή μόνο fancoil (<code>/floorcool</code>)</li>
+<li><b>Δυναμικό όριο dew-point</b>: ελάχ. προσαγωγή = σημείο δρόσου + 2°C (από SHT40)</li>
+<li>Προστασία συμπύκνωσης (fallback 18°C χωρίς υγρασία· 13°C μόνο-fancoil)</li>
+</ul>
+</div>
+<div>
+<h3>Ασφάλεια</h3>
+<ul>
+<li>Σκληρό όριο προσαγωγής (προστασία δαπέδου)</li>
+<li>Αντιπαγετική προστασία (frost)</li>
+<li>Failsafe χαμένης επικοινωνίας</li>
+<li>Failsafe σφάλματος αισθητήρα</li>
+<li>Interlock βάνας (ποτέ open+close μαζί)</li>
+<li>Relays OFF στο boot</li>
+<li>Anti-seize (περιοδικό ξεμούδιασμα)</li>
+</ul>
+<h3>Διεπαφές &amp; άνεση</h3>
+<ul>
+<li><b>Ασύρματη οθόνη αφής CYD</b> (WiFi/UDP) — στο σαλόνι, χωρίς καλώδιο</li>
+<li><b>3 σελίδες σε swipe</b> + τελίτσες: <b>Θέρμανση / Καιρός / Ενέργεια</b></li>
+<li><b>Σελίδα Καιρού</b>: τρέχων (θερμ/αίσθηση/υγρασία/άνεμος/βροχή) + <b>πρόβλεψη 4 ημερών</b> με εικονίδια (Open-Meteo)</li>
+<li><b>Σελίδα Ενέργειας</b>: τρέχοντα W + €/ώρα, Σήμερα/Μήνας/Σύνολο kWh &amp; €</li>
+<li><b>Υγρασία δωματίου</b> (SHT40) σε CYD / Telegram / web</li>
+<li><b>Ένδειξη κατάστασης</b> παντού (γιατί OFF / τι κάνει), με χρώμα στο CYD</li>
+<li><b>OLED service display</b> στο λεβητοστάσιο (κατάσταση + βλάβες)</li>
+<li>Telegram (έλεγχος + ειδοποιήσεις)</li>
+<li>Τοπική web σελίδα</li>
+<li>NVS persistence (setpoint, εποχή, <b>θέση βάνας</b>, ενέργεια)</li>
+<li>Γονικό κλείδωμα + auto-dim/lock 3'</li>
+</ul>
+</div>
+</div>
+<h3>Ενέργεια &amp; κόστος</h3>
+<ul>
+<li><b>Μέτρηση κατανάλωσης αντλίας θερμότητας</b> (SCT-013-030, αμπεροτσιμπίδα)</li>
+<li><b>Στιγμιαίο κόστος</b> €/ώρα (τρέχουσα ισχύς × τιμή)</li>
+<li><b>Ημερήσιο / μηνιαίο / συνολικό</b> kWh &amp; € (ώρα από NTP)</li>
+<li>Ρυθμιζόμενη τιμή <code>/price</code> + μηδενισμός <code>/resetkwh</code> + αυτόματο μηδένισμα μήνα</li>
+<li>Το σωρευτικό κόστος <b>επιβιώνει διακοπή ρεύματος</b> (NVS)</li>
+</ul>
+</div>
+
+<div class="section" id="pinouts">
+<h2>4. Hardware &amp; αντιστοίχιση pins</h2>
+
+<h3>4.1 Λεβητοστάσιο — ESP32-S3</h3>
+<table>
+<tr><th>Λειτουργία</th><th>Pin (GPIO)</th><th>Σημειώσεις</th></tr>
+<tr><td>LoRa CS</td><td>10</td><td rowspan="7">Core1121-XF (LR1121). Λήψη με polling.</td></tr>
+<tr><td>LoRa DIO9 (IRQ)</td><td>7</td></tr>
+<tr><td>LoRa RST</td><td>9</td></tr>
+<tr><td>LoRa BUSY</td><td>8</td></tr>
+<tr><td>LoRa SCK</td><td>12</td></tr>
+<tr><td>LoRa MISO</td><td>13</td></tr>
+<tr><td>LoRa MOSI</td><td>11</td></tr>
+<tr><td>DS18B20 (1-Wire)</td><td>4</td><td>Όλοι οι αισθητήρες στον ίδιο bus (4.7kΩ pull-up)</td></tr>
+<tr><td><b>Relay K1 — Τρίοδη ΑΝΟΙΓΜΑ</b></td><td>14 (IN1)</td><td rowspan="4">4ch optocoupler, <b>active-LOW</b> (LOW=ON)</td></tr>
+<tr><td><b>Relay K2 — Τρίοδη ΚΛΕΙΣΙΜΟ</b></td><td>21 (IN2)</td></tr>
+<tr><td><b>Relay K3 — Κυκλοφορητής</b></td><td>47 (IN3)</td></tr>
+<tr><td><b>Relay K4 — Εφεδρικό</b></td><td>48 (IN4)</td></tr>
+<tr><td><b>SCT-013-030</b> — κατανάλωση αντλίας θερμότητας</td><td>5 (ADC1)</td><td>Bias 2×10kΩ→1.65V + 10µF. (2ος CT: GPIO6)</td></tr>
+<tr><td><b>OLED SSD1306</b> SDA</td><td>15</td><td rowspan="2">128×64 I2C, <b>software-I2C</b> (όχι 8/9 — τα πιάνει το LoRa). VCC=3.3V. Auto-detect 0x3C/0x3D.</td></tr>
+<tr><td><b>OLED SSD1306</b> SCL</td><td>16</td></tr>
+</table>
+<p class="small">Αισθητήρες (index στον bus — προς κλείδωμα ROM): 0=ζεστό buffer, 1=εξωτερική, 2=κρύο buffer, 3=προσαγωγή (έξοδος τρίοδης).</p>
+
+<h3>4.2 Σπίτι / Hub — ESP32 dev</h3>
+<table>
+<tr><th>Λειτουργία</th><th>Pin (GPIO)</th><th>Σημειώσεις</th></tr>
+<tr><td>LoRa CS</td><td>5</td><td rowspan="7">Core1121-XF (LR1121). Λήψη με polling (RX_DONE bit 0x08).</td></tr>
+<tr><td>LoRa DIO9</td><td>26</td></tr>
+<tr><td>LoRa RST</td><td>14</td></tr>
+<tr><td>LoRa BUSY</td><td>27</td></tr>
+<tr><td>LoRa SCK</td><td>18</td></tr>
+<tr><td>LoRa MISO</td><td>19</td></tr>
+<tr><td>LoRa MOSI</td><td>23</td></tr>
+<tr><td><b>SHT40</b> SDA (θερμ.+υγρασία δωμ.)</td><td>21</td><td rowspan="2">I2C, addr 0x44, cmd 0xFD high-precision. <b>Αντικατέστησε</b> το DS18B20 δωματίου.</td></tr>
+<tr><td><b>SHT40</b> SCL</td><td>22</td></tr>
+<tr><td>GPIO16, 17</td><td>16, 17</td><td>Ελεύθερα (πρώην UART γέφυρα CYD — η ζεύξη είναι τώρα <b>WiFi/UDP</b>)</td></tr>
+<tr><td><b>Onboard LED</b> (κυκλοφορητής)</td><td>2</td><td>Μπλε LED· ανάβει όταν δουλεύει ο κυκλοφορητής (active-HIGH)</td></tr>
+<tr><td>WiFi / Telegram / Web / UDP→CYD</td><td>—</td><td>Onboard· web στη θύρα 80· UDP στο CYD</td></tr>
+</table>
+
+<h3>4.3 CYD — ESP32-3248S035 (ILI9488 3.5")</h3>
+<table>
+<tr><th>Λειτουργία</th><th>Pin (GPIO)</th><th>Σημειώσεις</th></tr>
+<tr><td>TFT SCLK</td><td>14</td><td rowspan="6">HSPI (ώστε να μένει ελεύθερο το VSPI)</td></tr>
+<tr><td>TFT MOSI</td><td>13</td></tr>
+<tr><td>TFT MISO</td><td>12</td></tr>
+<tr><td>TFT CS</td><td>15</td></tr>
+<tr><td>TFT DC</td><td>2</td></tr>
+<tr><td>TFT BL (backlight)</td><td>27</td></tr>
+<tr><td>Touch XPT2046 CS</td><td>33</td><td>Ίδιο SPI bus με την οθόνη</td></tr>
+<tr><td><b>WiFi (onboard)</b> — ζεύξη με hub</td><td>—</td><td>UDP πάνω από WiFi (ίδιο δίκτυο)· τραβάει &amp; <b>καιρό</b> από internet (Open-Meteo)</td></tr>
+<tr><td>Τροφοδοσία 5V / GND</td><td>—</td><td>Από connector «5V/…/GND» (φορτιστής 5V)</td></tr>
+</table>
+<div class="ok"><b>CYD ασύρματο (v3.0):</b> Η ζεύξη με τον hub γίνεται πλέον <b>WiFi/UDP</b> (ίδιο δίκτυο, ίδιο <code>secrets.h</code>) — <b>κανένα καλώδιο γέφυρας</b>, μόνο τροφοδοσία 5V. Η οθόνη είναι γυρισμένη <b>180°</b> (<code>setRotation(3)</code> + αντίστοιχη αφή) για τον προσανατολισμό του κουτιού.</div>
+</div>
+
+<div class="section" id="wiring">
+<h2>5. Καλωδιώσεις</h2>
+
+<h3>5.1 Ασύρματη ζεύξη Σπίτι ↔ CYD (WiFi/UDP)</h3>
+<p>Το CYD επικοινωνεί με τον hub <b>ασύρματα μέσω WiFi</b> (UDP) — <b>κανένα καλώδιο γέφυρας</b>. Και τα δύο στο <b>ίδιο δίκτυο</b> (το CYD χρησιμοποιεί τα ίδια διαπιστευτήρια από το <code>include/secrets.h</code>). Έτσι η οθόνη μπαίνει στο <b>σαλόνι</b>, μακριά από τη ζέστη της μονάδας.</p>
+<pre>Hub  ── broadcast DisplayPacket (τιμές) ──►  CYD     (UDP 49501, ~1×/δευτ)
+CYD  ── CommandPacket (setpoint/εποχή/floorcool) ──►  Hub   (UDP 49502, ×3)
+Το CYD μαθαίνει το IP του hub από το 1ο πακέτο · ακεραιότητα με CRC16.</pre>
+<p><b>Τροφοδοσία:</b> το CYD θέλει μόνο <b>5V (φορτιστής USB)</b>, ο hub τη δική του. Η μόνη απαίτηση: να φτάνει το WiFi και στους δύο. <span class="small">Κίνηση δικτύου ~30 bytes 1×/δευτ — αμελητέα για το ίντερνετ του σπιτιού.</span></p>
+
+<h3>5.2 Τρίοδη Seltron (3-σημείων) μέσω 2 relays</h3>
+<pre>   230V N ─────────────────────────►  Κοινό (N) βάνας
+   230V L ──┬── K1 (COM→NO) ───────►  Καλώδιο ΑΝΟΙΓΜΑ
+            └── K2 (COM→NO) ───────►  Καλώδιο ΚΛΕΙΣΙΜΟ
+   K1 ON → ανοίγει   |   K2 ON → κλείνει   |   και τα δύο OFF → μένει
+   Interlock στον κώδικα: ΠΟΤΕ K1+K2 μαζί.</pre>
+<p>Η βάνα έχει εσωτερικούς τερματικούς διακόπτες — σταματά μόνη της στα άκρα. «ΑΝΟΙΓΜΑ» = περισσότερη πηγή (ζεστό buffer χειμώνα / κρύο buffer καλοκαίρι) — <b>ίδια φορά κίνησης</b> και στις δύο εποχές.</p>
+
+<h3>5.3 Relay board (4ch optocoupler, active-LOW)</h3>
+<table>
+<tr><th>Relay IN</th><th>S3 GPIO</th><th>Φορτίο</th></tr>
+<tr><td>IN1 → K1</td><td>14</td><td>Τρίοδη ΑΝΟΙΓΜΑ</td></tr>
+<tr><td>IN2 → K2</td><td>21</td><td>Τρίοδη ΚΛΕΙΣΙΜΟ</td></tr>
+<tr><td>IN3 → K3</td><td>47</td><td>Κυκλοφορητής</td></tr>
+<tr><td>IN4 → K4</td><td>48</td><td>Εφεδρικό</td></tr>
+<tr><td>VCC / GND</td><td>5V / GND</td><td>Τροφοδοσία board (κοινή GND με S3)</td></tr>
+</table>
+<div class="warn"><b>3.3V vs 5V:</b> με board 5V &amp; λογική 3.3V, ένα active-low relay ίσως δεν σβήνει εντελώς. Αν συμβεί → τροφοδότησε VCC στα 3.3V ή χρησιμοποίησε jumper JD-VCC.</div>
+
+<h3>5.4 Αισθητήρες DS18B20 (αδιάβροχοι)</h3>
+<p>Κόκκινο→3.3V, Μαύρο→GND, Κίτρινο(data)→GPIO4, με αντίσταση <b>4.7kΩ ανάμεσα σε data↔3.3V</b>. Όλοι στον ίδιο bus (μοναδικές ROM). <span class="small">Προσοχή: τα χρώματα διαφέρουν ανά κατασκευαστή — επιβεβαίωσε VCC/GND πριν δώσεις ρεύμα (ανάποδη πολικότητα «ρίχνει» την τροφοδοσία).</span></p>
+<h3>5.8 SHT40 — θερμοκρασία + υγρασία δωματίου (hub)</h3>
+<p>Ο αισθητήρας δωματίου του hub είναι πλέον <b>SHT40</b> (I2C, addr <b>0x44</b>), που αντικατέστησε τον DS18B20: <code>VCC→3.3V, GND, SDA→GPIO21, SCL→GPIO22</code>. Δίνει <b>θερμοκρασία ΚΑΙ υγρασία</b> με μία ανάγνωση (εντολή 0xFD high-precision). Η <b>αισθητήρια πλευρά</b> (το λευκό τετραγωνάκι με τη διαγώνιο) πρέπει να «βλέπει» τον αέρα, μακριά από πηγές θερμότητας. Από την υγρασία + θερμοκρασία ο hub υπολογίζει το <b>σημείο δρόσου</b> (τύπος Magnus) και το στέλνει στον S3.</p>
+<div class="warn"><b>ΘΕΣΗ — κρίσιμο (self-heating):</b> ο SHT40 ΔΕΝ πρέπει να είναι μέσα στο ζεστό κουτί με το ESP32/οθόνη — διαβάζει <b>+3-4°C</b> ψηλά (και χαμηλότερη υγρασία). Βάλ' τον <b>έξω / σε αεριζόμενο θαλαμάκι</b> με ροή αέρα δωματίου, σφραγισμένο από τη ζέστη της πλακέτας. <b>Καμία σιλικόνη στις επαφές I2C</b> (προκαλεί soft-short στο SCL → νεκρός bus). <span class="small">Το dew-point μένει σωστό ακόμα κι με self-heating (τα λάθη T/RH αλληλοαναιρούνται), αλλά η εμφανιζόμενη θερμ/υγρασία όχι.</span></div>
+<div class="ok"><b>Προστασία I2C:</b> στο boot ο hub ελέγχει SDA/SCL — αν είναι «κολλημένα» (short), <b>παρακάμπτει</b> τον αισθητήρα ώστε <b>να ΜΗΝ κρεμάσει</b> όλος ο hub. Τυπώνει <code>[I2C] βρέθηκε @ 0x44</code> όταν εντοπίσει τον SHT40.</div>
+
+<h3>5.5 Καλωδίωση 230V — Κλέμες / Wago (πρακτικός οδηγός)</h3>
+<div class="warn"><b>🔴 ΑΣΦΑΛΕΙΑ:</b> ΟΛΗ η καλωδίωση 230V γίνεται με το ρεύμα <b>ΚΛΕΙΣΤΟ</b> (κατεβασμένη ασφάλεια / βγαλμένη πρίζα). Δίνεις ρεύμα μόνο αφού όλα είναι μέσα σε κλέμες/Wago, χωρίς γυμνό χαλκό. Το 230V σκοτώνει.</div>
+
+<h4 style="margin:10px 0 3px;color:#0d4a6b;">Αναγνώριση καλωδίων</h4>
+<div class="flex">
+<div>
+<p class="small" style="margin:2px 0;"><b>Παροχή 230V</b></p>
+<table>
+<tr><th>Χρώμα</th><th>Σημασία</th></tr>
+<tr><td>καφέ</td><td><b>L</b> — Φάση (230V)</td></tr>
+<tr><td>μπλε</td><td><b>N</b> — Ουδέτερο</td></tr>
+<tr><td>κίτρινο/πράσινο</td><td><b>PE</b> — Γείωση</td></tr>
+</table>
+</div>
+<div>
+<p class="small" style="margin:2px 0;"><b>Τρίοδη Seltron AVC05</b></p>
+<table>
+<tr><th>Χρώμα</th><th>Σημασία</th></tr>
+<tr><td>μπλε</td><td><b>N</b> — κοινό (σίγουρο)</td></tr>
+<tr><td>καφέ</td><td>μία φορά → <b>K1 (NO)</b></td></tr>
+<tr><td>μαύρο</td><td>άλλη φορά → <b>K2 (NO)</b></td></tr>
+</table>
+</div>
+</div>
+<div class="warn"><b>Προσοχή:</b> έχεις <b>δύο καφέ &amp; δύο μπλε</b>! Το καφέ της <i>παροχής</i> = Φάση· το καφέ της <i>βάνας</i> = κινητήρας. Ποιο από καφέ/μαύρο της βάνας είναι «άνοιγμα/κλείσιμο» το βρίσκουμε στη <b>βαθμονόμηση</b> (αν είναι ανάποδα → ανταλλαγή). Το μπλε της βάνας είναι πάντα το ουδέτερο.</div>
+
+<h4 style="margin:10px 0 3px;color:#0d4a6b;">Εύρεση NO / COM / NC με πολύμετρο (relay σβηστό)</h4>
+<pre>Πολύμετρο σε «μπιπ» (συνέχεια). Ένας ακροδέκτης στη ΜΕΣΑΙΑ βίδα (COM),
+ο άλλος σε κάθε πλαϊνή:
+   • ΚΑΝΕΙ μπιπ    →  NC   (ΔΕΝ τη χρησιμοποιούμε)
+   • ΔΕΝ κάνει μπιπ →  NO  ✓ (αυτή θέλουμε!)
+Χρησιμοποιούμε ΠΑΝΤΑ COM + NO  →  αν χαθεί ρεύμα/reset, όλα μένουν σβηστά (ασφαλές).</pre>
+
+<h4 style="margin:10px 0 3px;color:#0d4a6b;">Διανομή με 3 Wago 221</h4>
+<pre>  ΠΑΡΟΧΗ 230V (κλειστό ρεύμα!)
+     καφέ(L)        μπλε(N)        κίτρινο/πράσινο(PE)
+       │              │                    │
+       ▼              ▼                    ▼
+  ╔═════════╗    ╔═════════╗          ╔═════════╗
+  ║ WAGO #1 ║    ║ WAGO #2 ║          ║ WAGO #3 ║
+  ║   (L)   ║    ║   (N)   ║          ║  (PE)   ║
+  ║ 5 θέσεις║    ║ 3 θέσεις║          ║ 3 θέσεις║
+  ╠═════════╣    ╠═════════╣          ╠═════════╣
+  ║ ● καφέ  ║◄IN ║ ● μπλε  ║◄IN       ║ ● κιτρ. ║◄IN
+  ║ ● ──────╫──► COM K1    ║          ║ ● ──────╫──► PE ΠΡΙΖΑΣ
+  ║ ● ──────╫──► COM K2    ╫──► μπλε ΒΑΝΑΣ        (κενή)
+  ║ ● ──────╫──► COM K3    ╫──► N ΠΡΙΖΑΣ
+  ║ ●(κενή) ║    ╚═════════╝          ╚═════════╝
+  ╚═════════╝
+
+  ΕΞΟΔΟΙ relay (NO):
+     K1 (NO) ─────► καφέ ΒΑΝΑΣ
+     K2 (NO) ─────► μαύρο ΒΑΝΑΣ
+     K3 (NO) ─────► L ΠΡΙΖΑΣ  (κυκλοφορητής)</pre>
+
+<div class="flex">
+<div>
+<p class="small" style="margin:2px 0;"><b>WAGO #1 — Φάση (L), 5 θέσεων</b></p>
+<table>
+<tr><th>Θέση</th><th>Καλώδιο</th></tr>
+<tr><td>1</td><td>καφέ ΠΑΡΟΧΗΣ (IN)</td></tr>
+<tr><td>2</td><td>→ COM K1</td></tr>
+<tr><td>3</td><td>→ COM K2</td></tr>
+<tr><td>4</td><td>→ COM K3</td></tr>
+<tr><td>5</td><td>κενή</td></tr>
+</table>
+</div>
+<div>
+<p class="small" style="margin:2px 0;"><b>WAGO #2 — Ουδέτερο (N), 3 θέσ.</b></p>
+<table>
+<tr><th>Θέση</th><th>Καλώδιο</th></tr>
+<tr><td>1</td><td>μπλε ΠΑΡΟΧΗΣ (IN)</td></tr>
+<tr><td>2</td><td>→ μπλε ΒΑΝΑΣ</td></tr>
+<tr><td>3</td><td>→ N ΠΡΙΖΑΣ</td></tr>
+</table>
+<p class="small" style="margin:2px 0;"><b>WAGO #3 — Γείωση (PE), 3 θέσ.</b></p>
+<table>
+<tr><th>Θέση</th><th>Καλώδιο</th></tr>
+<tr><td>1</td><td>κίτρ/πράσ ΠΑΡΟΧΗΣ (IN)</td></tr>
+<tr><td>2</td><td>→ PE ΠΡΙΖΑΣ</td></tr>
+<tr><td>3</td><td>κενή</td></tr>
+</table>
+</div>
+</div>
+
+<h4 style="margin:10px 0 3px;color:#0d4a6b;">Κυκλοφορητής (έχει φις) → διακοπτόμενη πρίζα μέσω K3</h4>
+<pre>  L (Wago#1) ──► COM K3        ΠΡΙΖΑ σούκο (θηλυκή)
+  K3 (NO)    ──► L πρίζας       ┌──────────────┐
+  N (Wago#2) ──► N πρίζας       │  L   N   PE  │ ◄── εδώ μπαίνει το ΦΙΣ
+  PE (Wago#3)──► PE πρίζας      └──────────────┘     της αντλίας
+  K3 ON → η αντλία παίρνει ρεύμα.</pre>
+<div class="warn"><b>🔴 Η γείωση (κίτρινο/πράσινο) είναι ΥΠΟΧΡΕΩΤΙΚΗ στην αντλία</b> (μεταλλική). Η τρίοδη AVC05 (3 καλώδια) είναι διπλά μονωμένη (Class II) → δεν θέλει γείωση.</div>
+
+<h4 style="margin:10px 0 3px;color:#0d4a6b;">Σειρά δουλειάς</h4>
+<ol style="margin:4px 0;padding-left:20px;">
+<li>Φτιάξε τα 3 Wago· τράβα τις φάσεις σε COM K1/K2/K3.</li>
+<li>Σύνδεσε τα NO → βάνα / πρίζα.</li>
+<li>Πολύμετρο: <b>L και N να ΜΗΝ έχουν μπιπ μεταξύ τους</b> (αν έχουν → βραχυκύκλωμα, μην δώσεις ρεύμα).</li>
+<li>Δώσε ρεύμα → τρέξε <code>CALIBRATE_VALVE true</code> (μέτρηση χρόνου + έλεγχος φοράς).</li>
+</ol>
+<div class="ok"><b>Εναλλακτικά:</b> κλασικές κλέμες σειράς με γέφυρες κάνουν επίσης· τα Wago 221 είναι απλώς πιο γρήγορα &amp; ασφαλή.</div>
+
+<h3>5.6 OLED 0.96" SSD1306 (I2C) στον S3</h3>
+<pre>OLED            ESP32-S3
+ VCC  ─────────► 3.3V   (ΟΧΙ 5V)
+ GND  ─────────► GND
+ SCL  ─────────► GPIO16
+ SDA  ─────────► GPIO15</pre>
+<p><b>Προσοχή:</b> ΟΧΙ στα default I2C (8/9) — τα πιάνει το LoRa (BUSY=8, RST=9). Χρησιμοποιείται <b>software-I2C</b> σε ελεύθερα pins. Ο κώδικας κάνει <b>auto-detect διεύθυνσης</b> (0x3C ή 0x3D). Δείχνει: εποχή/setpoint ή βλάβη (πάνω), προσαγωγή→στόχος + θέση βάνας, buffers + αντλία, κατανάλωση αντλίας θερμότητας + εξωτερική, LoRa σήμα.</p>
+
+<h3>5.7 SCT-013-030 — μέτρηση κατανάλωσης αντλίας θερμότητας</h3>
+<pre>3.3V ─[10kΩ]──●──[10kΩ]─ GND          (●  = σημείο A ≈ 1.65V)
+              │
+        σημείο A ●── κόκκινο SCT
+              │
+           [10µF +]   (− ρίγα → GND)
+              │
+             GND        μαύρο SCT ──► GPIO5</pre>
+<table>
+<tr><th>Από</th><th>Πού</th></tr>
+<tr><td>3.3V</td><td>πάνω πόδι R1 (10kΩ)</td></tr>
+<tr><td>R1↔R2 ένωση (σημείο A)</td><td>+ πυκνωτή 10µF, κόκκινο SCT</td></tr>
+<tr><td>κάτω πόδι R2 + «−» πυκνωτή</td><td>GND</td></tr>
+<tr><td>μαύρο SCT</td><td>GPIO5 (ADC1)</td></tr>
+</table>
+<p><b>SCT-013-030 (30A/1V)</b> = έξοδος τάσης με ενσωματωμένη burden → ασφαλές, χωρίς εξωτερική αντίσταση. Τα 2 καλώδια του CT <b>δεν έχουν πολικότητα</b> (το ένα στο A, το άλλο στο GPIO5· κανένα στο GND!). Ο δακτύλιος αγκαλιάζει <b>1 φάση</b> της τροφοδοσίας της αντλίας θερμότητας. <b>Χρειάζεται βαθμονόμηση</b> <code>CT_CAL</code> με γνωστό φορτίο. (Αν είναι SCT-013-<b>000</b> = έξοδος ρεύματος → θέλει εξωτερική burden ~33Ω.)</p>
+</div>
+
+<div class="section" id="logic">
+<h2>6. Λογική ελέγχου τρίοδης</h2>
+
+<h3>6.1 Θέρμανση (χειμώνας)</h3>
+<pre>στόχος = setpoint + CURVE_SLOPE·(setpoint − εξωτερική_φιλτραρισμένη)
+                  + ROOM_TRIM_GAIN·(setpoint − δωμάτιο)
+στόχος = clamp(στόχος, SUPPLY_MIN, SUPPLY_MAX − DEADBAND)</pre>
+<ul>
+<li>Αν προσαγωγή &lt; στόχος → <b>ΑΝΟΙΓΜΑ</b> (περισσότερο ζεστό)· αν &gt; → ΚΛΕΙΣΙΜΟ</li>
+<li>Εντός deadband → HOLD. Μετά κάθε παλμό → settle (αργό σύστημα, anti-hunt)</li>
+<li>Αντλία ON όταν: ζήτηση (δωμάτιο &lt; setpoint) ΚΑΙ ζέστη διαθέσιμη στο buffer</li>
+</ul>
+
+<p style="margin:10px 0 2px;"><b>Γράφημα καμπύλης</b> <span class="small">(παράδειγμα: setpoint 21°C, CURVE_SLOPE 0.7):</span></p>
+<svg viewBox="0 0 480 296" width="100%" style="max-width:470px;border:1px solid #dde3ea;border-radius:6px;background:#fff;">
+  <g stroke="#e6ecf2" stroke-width="1">
+    <line x1="119.7" y1="24" x2="119.7" y2="258"/>
+    <line x1="187.3" y1="24" x2="187.3" y2="258"/>
+    <line x1="255" y1="24" x2="255" y2="258"/>
+    <line x1="322.7" y1="24" x2="322.7" y2="258"/>
+    <line x1="390.3" y1="24" x2="390.3" y2="258"/>
+    <line x1="52" y1="151.6" x2="458" y2="151.6"/>
+    <line x1="52" y1="98.5" x2="458" y2="98.5"/>
+  </g>
+  <line x1="52" y1="45.3" x2="458" y2="45.3" stroke="#d9822b" stroke-width="1" stroke-dasharray="5,3"/>
+  <line x1="52" y1="204.8" x2="458" y2="204.8" stroke="#2e9e5b" stroke-width="1" stroke-dasharray="5,3"/>
+  <text x="57" y="42" fill="#b8541a" font-size="10">SUPPLY_MAX 40°C — όριο δαπέδου</text>
+  <text x="57" y="217" fill="#2e9e5b" font-size="10">SUPPLY_MIN 25°C</text>
+  <line x1="52" y1="24" x2="52" y2="258" stroke="#0d4a6b" stroke-width="1.5"/>
+  <line x1="52" y1="258" x2="458" y2="258" stroke="#0d4a6b" stroke-width="1.5"/>
+  <polyline points="52,45.3 104.8,45.3 394.4,204.8 458,204.8" fill="none" stroke="#b8541a" stroke-width="3"/>
+  <circle cx="187.3" cy="91" r="4" fill="#0d4a6b"/>
+  <text x="194" y="88" fill="#0d4a6b" font-size="10">0°C &#8594; ~36°C</text>
+  <g fill="#5a6675" font-size="10" text-anchor="middle">
+    <text x="52" y="272">&#8722;10</text><text x="119.7" y="272">&#8722;5</text><text x="187.3" y="272">0</text>
+    <text x="255" y="272">5</text><text x="322.7" y="272">10</text><text x="390.3" y="272">15</text><text x="458" y="272">20</text>
+  </g>
+  <g fill="#5a6675" font-size="10" text-anchor="end">
+    <text x="48" y="208">25</text><text x="48" y="155">30</text><text x="48" y="102">35</text><text x="48" y="49">40</text>
+  </g>
+  <text x="255" y="289" fill="#0d4a6b" font-size="11" text-anchor="middle">Εξωτερική θερμοκρασία (°C)</text>
+  <text x="14" y="140" fill="#0d4a6b" font-size="11" text-anchor="middle" transform="rotate(-90 14 140)">Προσαγωγή (°C)</text>
+</svg>
+<p class="small">Όσο πέφτει η εξωτερική → ανεβαίνει το νερό προσαγωγής, με όρια 25–40°C. Το <b>room trim</b> μετατοπίζει την καμπύλη πάνω/κάτω ανάλογα με το πραγματικό δωμάτιο (ήλιος/κόσμος → κατεβάζει). <b>Μικρότερη κλίση (CURVE_SLOPE) → χαμηλότερο νερό → πιο οικονομικό</b> (αρκεί να φτάνει η άνεση· εδώ ρυθμίζουμε στο Στάδιο 3).</p>
+
+<h3>6.2 Ψύξη (καλοκαίρι)</h3>
+<pre>στόχος  = COOL_SUPPLY_MAX − COOL_ROOM_GAIN·(δωμάτιο − setpoint)
+στόχος  = clamp(στόχος, COOL_MIN + DEADBAND, COOL_SUPPLY_MAX)
+
+COOL_MIN (ΔΥΝΑΜΙΚΟ — αντι-συμπύκνωση):
+   • μόνο fancoil         → 13°C   (το fancoil αποστραγγίζει)
+   • ενδοδαπέδιο + υγρασία → σημείο δρόσου + 2°C
+                             clamp(dewPoint+2, 16, COOL_SUPPLY_MAX−DEADBAND)
+   • χωρίς υγρασία (NaN)   → 18°C   (ασφαλές σταθερό fallback)</pre>
+<ul>
+<li>Αν προσαγωγή &gt; στόχος → <b>ΑΝΟΙΓΜΑ</b> (περισσότερο κρύο) — ίδια φορά με τη θέρμανση</li>
+<li>Αντλία ON όταν: ζήτηση (δωμάτιο &gt; setpoint) ΚΑΙ κρύο διαθέσιμο</li>
+</ul>
+<div class="ok"><b>Δυναμικό όριο dew-point:</b> ο hub στέλνει το σημείο δρόσου (από SHT40). Με ενεργό ενδοδαπέδιο, το ελάχιστο όριο προσαγωγής «κουμπώνει» πάνω από το dew-point: <b>ξηρός αέρας → χαμηλότερο όριο → πιο δυνατή ψύξη</b>· υγρός αέρας → ανεβαίνει το όριο = προστασία από ίδρωμα στο δάπεδο. <span class="small">Παράδειγμα: dew-point 14°C → όριο 16°C (αντί τυφλό 18)· dew-point 20°C → όριο 22°C.</span></div>
+
+<h3>6.3 Αντιπαγετική &amp; ασφάλειες (προτεραιότητα)</h3>
+<ol>
+<li><b>Σφάλμα αισθητήρα προσαγωγής</b> → pump OFF + βάνα ΚΛΕΙΣΙΜΟ</li>
+<li><b>Υπερθέρμανση</b> (προσαγωγή &gt; SUPPLY_MAX) → επείγον ΚΛΕΙΣΙΜΟ</li>
+<li><b>Συμπύκνωση ψύξης</b> (προσαγωγή &lt; COOL_MIN — <span class="small">δυναμικό, dew-point</span>) → επείγον ΚΛΕΙΣΙΜΟ</li>
+<li><b>Αντιπαγετική</b> (δωμάτιο/προσαγωγή &lt; 5°C) → αναγκαστική θέρμανση (υπερισχύει εποχής)</li>
+<li><b>Comms-loss</b> &gt; 5' → ασφαλές setpoint 18°C</li>
+</ol>
+</div>
+
+<div class="section" id="params">
+<h2>7. Παράμετροι (tunable)</h2>
+<table>
+<tr><th>Παράμετρος</th><th>Τιμή</th><th>Περιγραφή</th></tr>
+<tr><td>CURVE_SLOPE</td><td>0.7</td><td>Κλίση καμπύλης θέρμανσης (ήπια, ενδοδαπέδιο)</td></tr>
+<tr><td>SUPPLY_MAX</td><td>40 °C</td><td><b>Σκληρό όριο</b> προσαγωγής (προστασία δαπέδου)</td></tr>
+<tr><td>SUPPLY_MIN</td><td>25 °C</td><td>Ελάχιστη προσαγωγή θέρμανσης</td></tr>
+<tr><td>ROOM_TRIM_GAIN</td><td>1.5</td><td>Διόρθωση στόχου ανά °C σφάλματος δωματίου</td></tr>
+<tr><td>DEADBAND</td><td>1.5 °C</td><td>Ζώνη ανοχής (anti-hunting)</td></tr>
+<tr><td>BUFFER_MARGIN</td><td>3 °C</td><td>Απαιτούμενο περιθώριο buffer</td></tr>
+<tr><td>COOL_SUPPLY_MIN_FLOOR</td><td>18 °C</td><td>Ελάχ. ψύξη με ενεργό ενδοδαπέδιο (συμπύκνωση)</td></tr>
+<tr><td>COOL_SUPPLY_MIN_FANCOIL</td><td>13 °C</td><td>Ελάχ. ψύξη μόνο με fancoil</td></tr>
+<tr><td>COOL_SUPPLY_MAX</td><td>24 °C</td><td>Πιο «χλιαρή» ψύξη</td></tr>
+<tr><td><b>DEWPOINT_MARGIN</b></td><td>2 °C</td><td><b>Περιθώριο πάνω από το σημείο δρόσου</b> (δυναμικό όριο ψύξης δαπέδου)</td></tr>
+<tr><td><b>COOL_SUPPLY_MIN_FLOOR_ABS</b></td><td>16 °C</td><td>Απόλυτο κάτω όριο δαπέδου (ακόμη κι αν ο αέρας είναι πολύ ξηρός)</td></tr>
+<tr><td>VALVE_TRAVEL_MS</td><td><b>77000 ms</b></td><td><b>Χρόνος διαδρομής βάνας Seltron AVC05 — ΜΕΤΡΗΘΗΚΕ (77s) με <code>CALIBRATE_VALVE</code></b></td></tr>
+<tr><td>PULSE_PER_DEG</td><td>1500 ms/°C</td><td>Διάρκεια παλμού ανά °C σφάλματος</td></tr>
+<tr><td>PULSE_MIN / MAX</td><td>1000 / 8000 ms</td><td>Όρια παλμού</td></tr>
+<tr><td>SETTLE_MS</td><td>90000 ms</td><td>Αναμονή μετά από παλμό</td></tr>
+<tr><td>FROST_ROOM / SUPPLY</td><td>5 °C</td><td>Κατώφλι αντιπαγετικής</td></tr>
+<tr><td>FROST_TARGET</td><td>25 °C</td><td>Στόχος προσαγωγής σε αντιπαγετική</td></tr>
+<tr><td>PUMP_MIN_STATE_MS</td><td>60000 ms</td><td>Ελάχ. χρόνος ON/OFF αντλίας</td></tr>
+<tr><td>ANTI_SEIZE_INTERVAL</td><td>7 ημέρες</td><td>Περίοδος ξεμουδιάσματος</td></tr>
+<tr><td>OUTDOOR_ALPHA</td><td>~1h τ</td><td>Σταθερά εξομάλυνσης εξωτερικής</td></tr>
+<tr><td>FAILSAFE_SETPOINT</td><td>18 °C</td><td>Setpoint σε χαμένη επικοινωνία</td></tr>
+<tr><td>CT_A_PER_V</td><td>30 A/V</td><td>SCT-013-030: 1V RMS = 30A</td></tr>
+<tr><td>CT_CAL</td><td>1.00</td><td><b>Βαθμονόμηση μετρητή ρεύματος</b> — επιβεβαιώθηκε ~1% με βραστήρα 2000W (RMS με αφαίρεση μέσης τιμής)</td></tr>
+<tr><td><b>CT_NOISE_FLOOR</b></td><td>100 W</td><td>Κάτω από αυτό → 0 (κόβει θόρυβο EMI· η αντλία τραβάει εκατοντάδες W έως kW)</td></tr>
+<tr><td><b>hpFaultW</b></td><td>500 W*</td><td>Όριο alert βλάβης αντλίας (<code>/hpwatt</code>, NVS) — πάνω από ανεμιστήρα, κάτω από συμπιεστή</td></tr>
+<tr><td>eurPerKwh</td><td>0.15 €*</td><td>Τιμή ρεύματος — αλλάζει live με <code>/price</code> (NVS)</td></tr>
+</table>
+<p class="small">* Στο SIM mode χρησιμοποιούνται μικρότερες τιμές (travel 20s, settle 6s) μόνο για demo. Η τιμή €/kWh είναι placeholder — όρισέ τη με <code>/price</code>. <b>Βαθμονόμηση CT:</b> κλέμπαρε τη φάση γνωστού ωμικού φορτίου (βραστήρα ~2000W) ή χρησιμοποίησε πριζόμετρο/αμπεροτσιμπίδα ως αναφορά → <code>CT_CAL = πραγματικά / μετρημένα</code>.</p>
+</div>
+
+<div class="section" id="proto">
+<h2>8. Πρωτόκολλα επικοινωνίας</h2>
+
+<h3>8.1 LoRa — βιβλιοθήκη HeatLink (<code>lib/HeatLink/</code>)</h3>
+<table>
+<tr><th>Πακέτο</th><th>Πεδία</th></tr>
+<tr><td><b>BoilerStatus</b><br>(S3 → σπίτι, 18B)</td><td>type, version, seq, bufHotTop, bufHotBot(=εξωτερική), bufCold, valveTemp(=προσαγωγή), pumpPower, relays(bitmask), mode(εποχή), <b>ctrlStatus</b>(κατάσταση ελέγχου), crc16</td></tr>
+<tr><td><b>HouseCmd</b><br>(σπίτι → S3, 13B)</td><td>type, version, seq, setpoint, houseTemp, season, flags(CMD_FLAG_FANCOIL_ONLY), <b>dewPoint</b>(σημείο δρόσου ×100), crc16</td></tr>
+</table>
+<p class="small">Θερμοκρασίες int16 ×100. TEMP_NAN=INT16_MIN. CRC16-CCITT. Implicit header, zero-pad σε 24B. Relays bitmask: RELAY_VALVE_OPEN, RELAY_VALVE_CLOSE, RELAY_PUMP, RELAY_SPARE.</p>
+
+<h3>8.2 Ασύρματη ζεύξη CYD (UDP/WiFi) — βιβλιοθήκη UartLink (<code>lib/UartLink/</code>)</h3>
+<table>
+<tr><th>Πακέτο</th><th>Πεδία</th></tr>
+<tr><td><b>DisplayPacket</b><br>(σπίτι → CYD, broadcast UDP 49501)</td><td>room, hotTop, outdoor, cold, valve, pumpW, setpoint, season, flags(F_COMMS_OK / F_FANCOIL_ONLY / F_TIME_OK), rssi, hh/mm/dd/mo(ώρα NTP), <b>humidity</b>(%RH), <b>ctrlStatus</b>, <b>kwhDay / kwhMonth / kwhTotal</b>, <b>eurKwh</b> (σελίδα Ενέργειας)</td></tr>
+<tr><td><b>CommandPacket</b><br>(CYD → σπίτι, UDP 49502)</td><td>setpoint, season, flags(CMD_FANCOIL_ONLY)</td></tr>
+</table>
+<p class="small">Μεταφορά: <b>UDP πάνω από WiFi</b> (raw struct + CRC16). Ο hub κάνει broadcast τις τιμές ~1×/δευτ· το CYD στέλνει εντολές unicast (×3) στο IP που έμαθε. <span class="small">(Πρώην UART/Serial — η ζεύξη έγινε ασύρματη στην v3.0.)</span> Header-only, χωρίς RadioLib.</p>
+</div>
+
+<div class="section" id="status">
+<h2>9. Ενδείξεις κατάστασης — τι φαίνεται πού</h2>
+<p>Ο S3 παράγει έναν κωδικό <b>κατάστασης ελέγχου</b> (γιατί είναι OFF / τι κάνει) που ταξιδεύει σε <b>όλες τις διεπαφές</b>:</p>
+<table>
+<tr><th>Κατάσταση</th><th>Σημασία</th><th>Χρώμα στο CYD</th></tr>
+<tr><td><b>HEATING</b></td><td>Θέρμανση ενεργή</td><td>κόκκινο/ζεστό</td></tr>
+<tr><td><b>COOLING</b></td><td>Ψύξη ενεργή</td><td>μπλε</td></tr>
+<tr><td><b>OFF</b></td><td>Ικανοποιήθηκε (έφτασε ο στόχος)</td><td>γκρι</td></tr>
+<tr><td><b>WAIT HOT</b></td><td>Θέλει θέρμανση, αλλά το buffer ζεστού δεν είναι έτοιμο</td><td>κίτρινο</td></tr>
+<tr><td><b>WAIT COLD</b></td><td>Θέλει ψύξη, αλλά το buffer κρύου δεν είναι έτοιμο</td><td>κίτρινο</td></tr>
+<tr><td><b>FROST</b></td><td>Αντιπαγετική προστασία</td><td>μπλε</td></tr>
+<tr><td><b>SAFETY</b></td><td>Ασφάλεια (αισθητήρας / υπερθέρμανση / συμπύκνωση)</td><td>κόκκινο</td></tr>
+</table>
+<p style="margin-top:14px;"><b>Πίνακας «τι βγάζει πού»</b> — ποια τιμή/ένδειξη εμφανίζεται σε κάθε διεπαφή:</p>
+<table>
+<tr><th>Τιμή / ένδειξη</th><th>CYD</th><th>Telegram</th><th>Web</th><th>OLED&nbsp;(S3)</th></tr>
+<tr><td>Θερμοκρασία δωματίου</td><td>✔ (μεγάλο)</td><td>✔</td><td>✔</td><td>—</td></tr>
+<tr><td>Υγρασία δωματίου (SHT40)</td><td>✔ (RH%)</td><td>✔</td><td>✔</td><td>—</td></tr>
+<tr><td>Σημείο δρόσου</td><td>—</td><td>✔</td><td>—</td><td>—</td></tr>
+<tr><td>Buffer ζεστού / κρύου</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td></tr>
+<tr><td>Εξωτερική θερμοκρασία</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td></tr>
+<tr><td>Προσαγωγή (έξοδος βάνας)</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td></tr>
+<tr><td>Θέση βάνας %</td><td>—</td><td>—</td><td>—</td><td>✔</td></tr>
+<tr><td>Ισχύς αντλίας θερμότητας (W)</td><td>✔ (HP__W)</td><td>✔</td><td>✔</td><td>✔</td></tr>
+<tr><td>Κόστος €/ώρα + kWh ημ./μην./συν.</td><td>✔ (σελ. Ενέργεια)</td><td>✔</td><td>✔</td><td>—</td></tr>
+<tr><td>Καιρός + πρόβλεψη 4 ημερών</td><td>✔ (σελ. Καιρός)</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td><b>Κατάσταση ελέγχου</b></td><td>✔ (χρώμα, πάνω-αριστερά)</td><td>✔ («🔧 Κατάσταση»)</td><td>—</td><td>✔ (πάνω γραμμή)</td></tr>
+<tr><td>Setpoint / εποχή</td><td>✔ (+αλλαγή)</td><td>✔ (+αλλαγή)</td><td>✔ (+αλλαγή)</td><td>✔</td></tr>
+<tr><td>Ώρα / ημερομηνία (NTP)</td><td>✔</td><td>✔</td><td>—</td><td>—</td></tr>
+<tr><td>RSSI / σύνδεση</td><td>✔ (μπάρες+LED)</td><td>✔</td><td>✔</td><td>✔ (NO LINK)</td></tr>
+</table>
+<p class="small">Ο κωδικός παράγεται στον S3 (<code>CtrlStatus</code>), στέλνεται με LoRa (<code>BoilerStatus.ctrlStatus</code>) στον hub και προωθείται στο CYD (<code>DisplayPacket.ctrlStatus</code>) + στο Telegram. Στο OLED φαίνεται ως κείμενο (π.χ. «WAIT COLD set26.0»).</p>
+<div class="ok"><b>Οι 3 σελίδες του CYD (swipe αριστερά/δεξιά + τελίτσες ●●●):</b>
+<ul style="margin:6px 0">
+<li><b>① Θέρμανση</b> — δωμάτιο (μεγάλο) + υγρασία, buffers/εξωτερική/προσαγωγή, ισχύς αντλίας, setpoint −/+, εποχή, κατάσταση (χρώμα)</li>
+<li><b>② Καιρός</b> — τρέχων (θερμ/αίσθηση/υγρασία/άνεμος/βροχή% + εικονίδιο) και <b>πρόβλεψη 4 ημερών</b> (μέρα/εικονίδιο/μέγ-ελάχ/βροχή%) από Open-Meteo</li>
+<li><b>③ Ενέργεια</b> — τρέχοντα Watt + €/ώρα, και Σήμερα / Μήνας / Σύνολο σε kWh &amp; €</li>
+</ul>
+Το swipe ξεχωρίζει από το πάτημα κουμπιού (κατώφλι ~70px). Γονικό κλείδωμα + auto-dim/lock στις 3'.</div>
+</div>
+
+<div class="section" id="telegram">
+<h2>10. Εντολές Telegram</h2>
+<table>
+<tr><th>Εντολή</th><th>Λειτουργία</th></tr>
+<tr><td><code>/status</code></td><td>Όλες οι τιμές + <b>κόστος</b> (δωμάτιο, <b>υγρασία</b>, <b>σημείο δρόσου</b>, buffers, προσαγωγή, ισχύς αντλίας θερμότητας + €/ώρα, Σήμερα/Μήνας/Σύνολο kWh &amp; €, <b>κατάσταση ελέγχου</b>, ώρα, RSSI, setpoint, εποχή)</td></tr>
+<tr><td><code>/set 22.5</code></td><td>Ορισμός setpoint (5–30 °C)</td></tr>
+<tr><td><code>/winter</code> / <code>/summer</code></td><td>Αλλαγή εποχής (θέρμανση / ψύξη)</td></tr>
+<tr><td><code>/floorcool on|off</code></td><td>Ψύξη ενδοδαπέδιου: on=ενεργό (<b>δυναμικό όριο dew-point</b>), off=μόνο fancoil (έως 13°C)</td></tr>
+<tr><td><code>/price 0.18</code></td><td><b>Τιμή ρεύματος €/kWh</b> (αποθηκεύεται σε NVS)</td></tr>
+<tr><td><code>/resetkwh</code></td><td><b>Μηδενισμός</b> συνολικού μετρητή ενέργειας</td></tr>
+<tr><td><code>/hpwatt 500</code></td><td><b>Όριο alert βλάβης αντλίας</b> (W, NVS) — κάτω από αυτό + «αναμονή» για 30' → ειδοποίηση</td></tr>
+<tr><td><code>/help</code></td><td>Λίστα εντολών</td></tr>
+</table>
+<p>Αυτόματες ειδοποιήσεις: «online» στο boot, alert σε <b>χαμένη επικοινωνία</b> (&gt;90s) + επαναφορά, και <b>πιθανή βλάβη αντλίας θερμότητας</b> (ζήτηση + buffer άδειο + κατανάλωση &lt; <code>hpFaultW</code> για &gt;30'). Κλειδωμένο σε συγκεκριμένο CHAT_ID.</p>
+</div>
+
+<div class="section" id="flags">
+<h2>11. Flags λειτουργίας &amp; στάδια (S3)</h2>
+<table>
+<tr><th>Flag</th><th>Σημασία</th></tr>
+<tr><td><code>SIM_MODE</code></td><td><b>true</b>=εικονικοί αισθητήρες + σενάριο demo· <b>false</b>=πραγματικοί DS18B20</td></tr>
+<tr><td><code>DRY_RUN</code></td><td><b>true</b>=μόνο εκτύπωση «τι θα έκανε»· <b>false</b>=οδηγεί πραγματικά relays</td></tr>
+<tr><td><code>RELAY_SELFTEST</code></td><td><b>true</b>=χτυπάει τα 4 relay κυκλικά (έλεγχος πολικότητας/καλωδίωσης)</td></tr>
+<tr><td><code>RELAY_ACTIVE_LOW</code></td><td><b>true</b>=LOW ενεργοποιεί (συνηθισμένο σε optocoupler boards)</td></tr>
+<tr><td><code>CALIBRATE_VALVE</code></td><td><b>true</b>=ΜΟΝΟ βαθμονόμηση βάνας: κλείνει τέρμα, ανοίγει με χρονόμετρο → διάβασε τον χρόνο διαδρομής (+ έλεγχος φοράς)</td></tr>
+<tr><td><code>OLED_ENABLE</code></td><td><b>true</b>=ενεργό το τοπικό OLED (false αν δεν είναι συνδεδεμένο)</td></tr>
+<tr><td><code>CT_ENABLE</code></td><td><b>true</b>=ενεργή η μέτρηση κατανάλωσης (SCT-013 @ GPIO5)</td></tr>
+</table>
+<h3>Στάδια εγκατάστασης</h3>
+<ol>
+<li><b>Φάση 1:</b> Λογική dry-run (SIM_MODE=true, DRY_RUN=true) — επιβεβαίωση εγκεφάλου ✔</li>
+<li><b>Φάση 2:</b> Relays — self-test (4 κλικ) ✔, μετά DRY_RUN=false (relays ακολουθούν λογική, χωρίς βάνα/230V) ✔</li>
+<li><b>Φάση 3:</b> Εγκατάσταση — actuator+αισθητήρες, μέτρηση travel, κλείδωμα ROM, SIM_MODE=false, ζωντανή δοκιμή</li>
+</ol>
+</div>
+
+<div class="section" id="build">
+<h2>12. Build, Flash &amp; θύρες</h2>
+<pre>$env:PATH += ";$env:USERPROFILE\.platformio\penv\Scripts"
+pio run -e levitostatio -t upload --upload-port COM6   # ESP32-S3 (native USB)
+pio run -e living_room  -t upload --upload-port COM4   # ESP32 σπιτιού (CH340)
+pio run -e cyd          -t upload --upload-port COM4   # CYD (όταν συνδεδεμένο)</pre>
+<table>
+<tr><th>Board</th><th>Θύρα</th><th>Σημείωση</th></tr>
+<tr><td>ESP32-S3 (λεβητοστάσιο)</td><td>COM6</td><td>Native USB (VID 303A:1001). Αν δεν κάνει reboot μετά το flash → πάτα RESET.</td></tr>
+<tr><td>ESP32 dev (σπίτι)</td><td>COM4</td><td>CH340</td></tr>
+<tr><td>CYD</td><td>COM4</td><td>CH340 (όταν συνδεδεμένο μόνο του)</td></tr>
+</table>
+<p><b>Persistence (NVS):</b> Σπίτι → setpoint, εποχή, fancoilOnly, <b>ενέργεια/κόστος</b> (σήμερα/μήνας/σύνολο), τιμή €/kWh. Λεβητοστάσιο (S3) → <b>θέση βάνας</b>. Γράφονται μόνο σε αλλαγή (αντι-φθορά flash), φορτώνονται στο boot — <b>επιβιώνουν διακοπή ρεύματος</b>.</p>
+<p class="small">Περιβάλλον: PlatformIO / Arduino, espressif32@^6.9.0, RadioLib, DallasTemperature, OneWire, UniversalTelegramBot, ArduinoJson@^6. Το <code>living_room</code> χρησιμοποιεί <code>huge_app.csv</code> partition. Διαπιστευτήρια στο <code>include/secrets.h</code> (gitignored).</p>
+</div>
+
+<div class="section" id="safety">
+<h2>13. Ασφάλεια</h2>
+<div class="warn">
+<ul>
+<li><b>230V:</b> Κάθε εργασία στα relays/actuator/αντλία με το <b>ρεύμα κλειστό</b>. Διαχωρισμός ζώνης 230V από χαμηλή τάση στο κουτί, strain relief.</li>
+<li><b>Όριο προσαγωγής 40°C:</b> προστατεύει το ενδοδαπέδιο. Μην το ανεβάσεις χωρίς λόγο.</li>
+<li><b>Ψύξη ενδοδαπέδιου:</b> κίνδυνος συμπύκνωσης — το σύστημα κρατά προσαγωγή <b>πάνω από το σημείο δρόσου</b> (δυναμικό όριο από SHT40)· εναλλακτικά απομόνωσε το δάπεδο (κλειστή βάνα collector + <code>/floorcool off</code>).</li>
+<li><b>Πριν συνδεθεί φορτίο:</b> πάντα self-test relay χωρίς φορτίο, και επιβεβαίωση flags.</li>
+<li><b>Μία πηγή 5V:</b> ποτέ φορτιστή + USB ταυτόχρονα στην ίδια γραμμή 5V.</li>
+</ul>
+</div>
+</div>
+
+<div class="section" id="future">
+<h2>14. Μελλοντικά / TODO</h2>
+<div class="ok"><b>Ολοκληρώθηκαν (v2.0):</b> OLED service display (S3), μέτρηση κατανάλωσης αντλίας θερμότητας (SCT-013) + κόστος €/ώρα &amp; ημερήσιο/μηνιαίο/συνολικό με NTP, θέση βάνας σε NVS, ρουτίνα βαθμονόμησης βάνας, οδηγός καλωδίωσης 230V.<br>
+<b>Ολοκληρώθηκαν (v2.1):</b> αισθητήρας <b>SHT40</b> (θερμοκρασία + υγρασία δωματίου), <b>δυναμικό όριο ψύξης με σημείο δρόσου</b> (dew-point), <b>ένδειξη κατάστασης</b> σε CYD/Telegram/OLED, μέτρηση χρόνου διαδρομής βάνας (77s), διάλογος ενδοδαπέδιας ψύξης + ισχύς αντλίας στο CYD.<br>
+<b>Ολοκληρώθηκαν (v3.0):</b> <b>ασύρματο CYD</b> (WiFi/UDP αντί UART — μπαίνει στο σαλόνι), <b>3 σελίδες σε swipe</b> (Θέρμανση/Καιρός/Ενέργεια) + τελίτσες, <b>σελίδα Καιρού</b> (Open-Meteo: τρέχων + αίσθηση + βροχή% + πρόβλεψη 4 ημερών με εικονίδια), <b>σελίδα Ενέργειας</b> (kWh &amp; €), <b>alert βλάβης αντλίας</b> (<code>/hpwatt</code>), <b>LED κυκλοφορητή</b> στον hub, προστασία I2C (δεν κρεμάει σε βλάβη αισθητήρα), βελτιωμένη μέτρηση CT (RMS) + βαθμονόμηση με βραστήρα, οθόνη γυρισμένη 180°.</div>
+<ul>
+<li><b>Στάδιο 3 — εγκατάσταση:</b> καλωδίωση τρίοδης/αντλίας (Wago/230V), μέτρηση χρόνου διαδρομής (<code>CALIBRATE_VALVE</code>), καλωδίωση &amp; βαθμονόμηση CT (<code>CT_CAL</code>), ταυτοποίηση &amp; κλείδωμα ROM αισθητήρων, SIM_MODE=false, ζωντανή δοκιμή.</li>
+<li><b>Αντικατάσταση παλιού θερμοστάτη</b> (Siemens RAA31.16, κεντρικά στο σπίτι): αφαίρεση → νέος αισθητήρας δωματίου εκεί, ο κυκλοφορητής περνά στο K3. Το χειροκίνητο κουμπί ΖΝΧ μένει ως έχει.</li>
+<li><b>Ζεστό νερό χρήσης (ΖΝΧ):</b> ο 2ος κυκλοφορητής στο εφεδρικό <b>K4</b> → κουμπί στο CYD/Telegram (το χειροκίνητο μένει παράλληλα).</li>
+<li><b>Κόμβος μπάνιου</b> (ESP8266): φωτισμός με ανίχνευση σκότους/κίνησης + εντολή ΖΝΧ όταν κρύο.</li>
+<li><b>Επέκταση ×3:</b> κοινό λεβητοστάσιο, 3 διαμερίσματα με ξεχωριστή θερμοκρασία. Απαιτεί διευθυνσιοδότηση (zoneId) στο LoRa + περισσότερα κανάλια relay (16ch ή MCP23017). Ανά διαμέρισμα: ESP dev + LoRa + CYD.</li>
+<li><b>Fancoil θερμοστάτες</b> (δωμάτια / κουζίνα-σαλόνι) → ένταξη στο σύστημα.</li>
+<li><b>OTA</b> για το σπίτι (έχει WiFi) → flash χωρίς καλώδιο.</li>
+</ul>
+</div>
+
+<hr>
+<p class="small" style="text-align:center"><b>Samster's Land HESTIA</b> — Τεχνικό Εγχειρίδιο v3.0 · 27/06/2026<br>
+Home Energy &amp; Smart Thermal Intelligent Automation · Standalone LoRa Heating, Cooling &amp; Energy Control<br>
+Σχεδίαση &amp; κατασκευή: <b>Lefevr Konstantinos</b></p>
+
+</body>
+</html>
